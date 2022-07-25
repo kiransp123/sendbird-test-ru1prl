@@ -22,11 +22,41 @@ export class SendbirdService {
     return from(this.sb.GroupChannel.createChannel(users));
   }
 
-  public joinChannel(users: Array<User>): Observable<GroupChannel> {
-    // 1 - Join Existing Channel
-    // get list of existing channels, check if channel is there
-
-    // 2 - Create new channel
+  public joinChannel(users: Array<User>): Observable<GroupChannel>
+   {
+   
     return from(this.sb.GroupChannel.createChannel(users));
+  }
+  createGroupChannel(
+    channelName: string,
+    userIds: Array<string>,
+    callback: any ) 
+    {
+     const params = new this.sb.GroupChannelParams();
+     params.addUserIds();
+     params.addUserIds(userIds);
+     params.name = channelName;
+     this.sb.GroupChannel.createChannel(
+      params,
+      (groupChannel: SendBird.GroupChannel, error: SendBird.SendBirdError) => 
+      {
+        callback(error, groupChannel);
+      }
+    );
+  }
+  getMyGroupChannels(callback: any) 
+  {
+    const listQuery = this.sb.GroupChannel.createMyGroupChannelListQuery();
+    listQuery.includeEmpty = true;
+    listQuery.memberStateFilter = 'joined_only';
+    listQuery.order = 'latest_last_message';
+    listQuery.limit = 15; // The value of pagination limit could be set up to 100.
+    if (listQuery.hasNext) 
+    {
+      listQuery.next((groupChannels, error) =>
+       {
+        callback(error, groupChannels);
+      });
+    }
   }
 }
